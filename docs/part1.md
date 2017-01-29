@@ -1,8 +1,10 @@
-#RF Capture & Demodulation
+---
+---
+# RF Capture & Demodulation
 
 I'd never done any work with RF before, so my first step was to spend some time on Google getting my bearings.  While there was was no documentation on the particular devices I wanted to interface with, there is a smattering of documentation and tutorials on getting started with RF in general.
 
-###Tools
+### Tools
 After some browsing I decided on the following tools:
 - [RTL-SDR](http://www.rtl-sdr.com/) - I stumbled upon the site and bought a cheap dongle.
 - [gnuradio & gnuradio-companion](http://gnuradio.org/) - Invaluable for capturing and cleaning up the wireless signal, though also occasionally infuriating for a beginner.
@@ -12,7 +14,7 @@ After some browsing I decided on the following tools:
 It's also worth adding that Michael Ossmann's [SDR Lessons](http://greatscottgadgets.com/sdr/) were invaluable in quickly picking up the basics for someone who had no experience in RF.  I found the lesson on filters especially useful.
 
 
-###Identifying the signal
+### Identifying the signal
 #### Trip to the FCC
 I started with a trip to the FCC website.  In what turned out to be a consistent refrain, I could have accomplished it faster, but I only discovered a tool after I was already done: [fcc.io](http://fcc.io/).  In any case, FCC documentation yielded the operating frequency of the sensors as 344.94 Mhz.  This doesn't seem to be a very popular frequency, so I'm not sure why Honeywell chose it --- perhaps specifically for its obscurity?
 
@@ -28,7 +30,7 @@ The other thing that was useful from the FCC filing was the width of the signal 
 ![](bandwidth.png)
 Based on the filing, it looked to me like the signal spanned 100 kHz to either side of the 344.94 MHz center.  I ended up filtering slightly more narrowly based on the real world signal.
 
-####Seeing the signal in real life
+#### Seeing the signal in real life
 To confirm the information in the FCC filing, and to test whether I could correctly use the SDR hardware and GRC software, I removed one of the switch sensor pieces from its door, and used a permanent magnet as a manual trigger.  With an FFT sink running, it was clear that both moving the magnet to the sensor (i.e. "door close") and removing the magnet again (i.e. "door open") triggered the sensor to transmit a signal at ~345 MHz, as expected.  And it did appear to be about 100 KHz wide, as per the FCC filing.  Here's a screenshot of the FFT with max hold on, after a close and open trigger:
 ![](fft_nofilter.png)
 
@@ -60,7 +62,7 @@ The narrow FFT, on the right, is much more useful for seeing the form of the sig
 From here, I naively though I was close to being able to decode the signal and move on to analyzing the protocol.  Unfortunately, I spent hours down the rabbit hole of trying to get gnuradio to demodulate the signal for me.  Examples on the internet showed use of various combinations of the AM Demod, Clock Recovery MM, Binary Slicer, and other blocks.  Unfortunately, the specifics of all of these are not especially well documented, especially for someone without much experience.  The failed attempts' details are not worth recounting, but the summary is, for the life of me I couldn't get anything approximating decoded data out of the blocks.  So I eventually decided to cut out the middleman, and just convert the incoming RF data to bytes and process it myself.  This proved to be significantly simpler for someone with a coding background but without gnuradio experience.
 
 
-####Decoding in python instead
+#### Decoding in python instead
 I ended up with a GRC flowchart like this:
 ![](rawbytes.png)
 Here's a description of each of the blocks:

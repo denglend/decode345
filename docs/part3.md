@@ -1,6 +1,8 @@
-#MQTT and OpenHAB
+---
+---
+# MQTT and OpenHAB
 My original purpose in reading and parsing the sensor data was to integrate the sensor states into my home automation system.  I use [OpenHAB](http://www.openhab.org/), which supports integrating data from arbitrary sources via the [MQTT Binding](https://github.com/openhab/openhab1-addons/wiki/MQTT-Binding).
-###The Sender
+### The Sender
 I used [paho-mqtt](http://www.eclipse.org/paho/) library, which is available in Python and a number of other languages.
 I decided just to send each sensor's open/closed state.  It would require additional overhead (creating "items") on the OpenHAB side to record the low battery state, tamper state, etc.  For me, it wasn't worth it, since if a sensor is in low battery state, it will already appear on the alarm panel and beep annoyingly.  And I'm not concerned about anyone tampering with my sensors.  If I ever remove the alarm panel, I'll transmit the battery status to OpenHAB as well.
 
@@ -13,7 +15,7 @@ client.publish("/security/"+devicelist[device],"OPEN" if 1<<7 & status >0 else "
 client.disconnect()
                                 ```
 
-###The receiver
+### The receiver
 There are already number of tutorials on getting MQTT woqrking with OpenHAB so won't repeat that here.  The item file entries I use are like this:
 ```
 Contact security_BasementDoor "Basement Door [%s]" (gSecurity) {mqtt="<[mosquitto:/security/Basement Door:state:default]"}

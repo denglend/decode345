@@ -1,7 +1,9 @@
-#Protocol
+---
+---
+# Protocol
 There were two seperate steps in decoding the incoming stream of data from gnuradio.  First, the "raw" bytes needed to be converted to bits, and then the protocol used by the sensors needed to be decoded.
 
-###The Bitstream
+### The Bitstream
 Looking at the recorded FFT with inspectrum (see [Part 1](Part1.md)), it was clear that short vs long pulses were used to encode the data.
 #### Pulse Length
 While I thought I should be able to mathematically calculate the length of long and short pulses from the time scale in the inpsectrum FFT waterfall, I decided that would just add to debugging time and instead looked empirically at the length of the pulses to find the threshold that distinguished a short vs long pulse.
@@ -46,7 +48,7 @@ Where . is a short high and x is a long high.
 This actually worked well enough to identify events.  The top event was the closing of my basement door, the second is the opening of the basement door, and the third was triggering the tamper sensor.  The decoded stream was consistent between multiple triggerings of the same event on the same sensor, so could have been usable as a "decoder" by triggering every event and recording its decoded string.
 But it was clear that something was wrong because the messages were different lengths and not a multiple of 8.  Additionally, while it did look like there was a bit flip that indicated open vs closed or tampered vs not, it wasn't in a consistent bit position across different sensors.  So, in this form, I wasn't able to decode an unknown signal and I had no interest in triggering and recording every posible device state of every sensor in my house.
 
-####Bit Encoding: Take 2
+#### Bit Encoding: Take 2
 Convinced that I made a mistake somewhere I took another look at the waveform and noticed that not only were the highs different lengths, so were the lows.  So I reworked the python script to record the length of the lows in addition to the highs.
 This yielded strings like:
 ```
@@ -78,7 +80,7 @@ Decoding the 8-byte packets was thankfully the simplest part of the project.  Th
  - **Status** - Following the Device ID is a single status byte, which indicates the state of the sensor as well as the reason for the transmission.
  - **CRC** - Finally, the last two bytes are a CRC.  I assumed they were a CRC because they were consistent between all transmisisons that had six identical previous bytes, but their content seemed unpredictable otherwise.  
 
-####Status states
+#### Status states
 The status bits indicate the state of the different subsensors as well as whether the transmission was caused by a change in state or is just a periodic transmission.
 
 | Bit | Status |
@@ -98,14 +100,14 @@ The status bits indicate the state of the different subsensors as well as whethe
  - **Bit 5 & Unknown Bits** - There are four other bits remaining, which are typically all reset. Bit 5 I have seen reported as set on a real device, but it appeared to be a device in a neighboring house, so I don't know what the cause was.  I haven't seen bits 0, 1, or 4 set.  I would guess that these bits might be used for other types of sensors, and especially sensors that have multiple triggers (e.g. a dry contact sensor with two inputs).
 
 
-####CRC
+#### CRC
 I had some trouble determing the exact CRC parameters, until I tried flipping all the bits, which is how I ultimately decided \_- likely is intended as a 1 rather than vice versa.
 [RevEng](http://reveng.sourceforge.net/) was incredibly helpful for identifying the CRC algorithm used, which in this case was CRC-16/BUYPASS.  I then used the [crcmod](http://crcmod.sourceforge.net/) library to generate CRCs to check packet integrity on the receiving end, and discard any packets with incorrect CRCs.
 I also found this [CRC Calculator](http://www.sunshine2k.de/coding/javascript/crc/crc_js.html) helpful while verifying that I had interpreted the CRC parameters correctly.
 
 I do get a fair amount of packets that fail CRC.  These seem all to be for devices that are located outside my home.  For example, I'll get 3 successful packets for an unknown device, and the 3 CRC failures.  So the device is probably right at the end of my receiveable range.  I probably could tweak the noise floor/ceiling part of my code and more reliably receive these packets sucessfully, but I have no need to receive packets originating outside of my house so I haven't tried.
 
-####Other mysteries
+#### Other mysteries
 There does seem to be some other type of transmission that happens on the same frequency and using the same bitstream protocol.  I'll regularly see 12-byte packets decoded (instead of the normal 8-byte).  They have a similar set of sync bytes, though there appear to be three of them: 0xFFFFE instead of  0xFFFE.  The packets repeat consistently for the same 6 repetitions within a single transmisison, just like the Honeywell sensors, but otherwise there is nothing recognizable about the data, and the data doesn't seem to repeat between different transmissions.  So it could be a rolling code of some kind, but not much seems to use 344.94MHz, so I have no idea what device it would be.  One possible explanation is that the signal is not actually at 344.94MHz, but is close enough that I'm picking it up anyway through the lowpass filter.
 
 <-\- [Part 1 (RF Capture)](part1.md)
