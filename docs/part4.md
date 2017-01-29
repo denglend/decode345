@@ -18,3 +18,7 @@ The C code is available in the [GitHub repository](https://github.com/denglend/d
 
 #### Embedded receiver
 A different option would be to move the radio tuning off the PC altogether, and use a separate microcontroller to receive the signal.  A [Texas Instruments CC1101 ](http://www.ti.com/product/CC1101) seems like a good candidate, since one of its supported bands is 300 - 348 MHz.  Most of the breakout boards advertised for sale, specifically list 433 MHz as their operating frequently, however.  I'm not sure if that's just because 433 MHz is far and away the most popular frequency, or because the boards themselves only support 433, despite the CC1101 chip having a wider range.
+
+<-\- [Part 3](part3.md)
+
+VV [Code](https://github.com/denglend/decode345) VV
