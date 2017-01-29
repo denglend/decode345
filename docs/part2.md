@@ -74,9 +74,9 @@ Since I was never going to deal with the data outside of RF, it didn't really ma
 
 In other words, in the streams above \_- represents a one bit, and -\_ represents a zero bit.  With that in place, a little utility code converted the incoming RF data into 8-byte packets.
 
-###The Bytestream Protocol
+### The Bytestream Protocol
 
-####Packet structure
+#### Packet structure
 Decoding the 8-byte packets was thankfully the simplest part of the project.  The packets look like:
 
 |0|1|2|3|4|5|6|7|
