@@ -2,15 +2,15 @@
 title: Honeywell 345 Mhz Protocol
 ---
 
-#Honeywell 345 Mhz Protocol
+# Honeywell 345 Mhz Protocol
 
-####[Part 1 - RF Capture & Demodulation](part1.md) 
+#### [Part 1 - RF Capture & Demodulation](part1.md) 
 
-####[Part 2 - Protocol](part2.md)
+#### [Part 2 - Protocol](part2.md)
 
-####[Part 3 - MQTT & OpenHab](part3.md)
+#### [Part 3 - MQTT & OpenHab](part3.md)
 
-####[Part 4 - Up Next](part4.md)
+#### [Part 4 - Up Next](part4.md)
 
 I've been assembling some home automation with [OpenHAB 2](http://www.openhab.org/).  I had a few existing devices that were supported by OpenHAB, and purchased a zwave devices to fit other needs I had (under sink water leak sensing, basement humidity sensing, etc).  But, looking through online zwave catalogs, it seemed like I probably exhausted the list of devices worth purchasing rather quickly.  The devices are not cheap, and the costs add up, especially if you need to buy multiples.  For example, door and window sensors cost around $40, and you likely have a lot of doors and windows.
 
