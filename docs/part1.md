@@ -6,6 +6,7 @@ I'd never done any work with RF before, so my first step was to spend some time 
 
 ### Tools
 After some browsing I decided on the following tools:
+
 - [RTL-SDR](http://www.rtl-sdr.com/) - I stumbled upon the site and bought a cheap dongle.
 - [gnuradio & gnuradio-companion](http://gnuradio.org/) - Invaluable for capturing and cleaning up the wireless signal, though also occasionally infuriating for a beginner.
 - [inspectrum](https://github.com/miek/inspectrum) - A helpful tool for visualizing the recorded signal to identify its characteristics
@@ -15,6 +16,7 @@ It's also worth adding that Michael Ossmann's [SDR Lessons](http://greatscottgad
 
 
 ### Identifying the signal
+
 #### Trip to the FCC
 I started with a trip to the FCC website.  In what turned out to be a consistent refrain, I could have accomplished it faster, but I only discovered a tool after I was already done: [fcc.io](http://fcc.io/).  In any case, FCC documentation yielded the operating frequency of the sensors as 344.94 Mhz.  This doesn't seem to be a very popular frequency, so I'm not sure why Honeywell chose it --- perhaps specifically for its obscurity?
 
@@ -42,6 +44,7 @@ In addition to confirmation of the signal's frequency, one other observation I w
 Around this time I also noticed that the distance between the sensor and the antenna greatly impacted the visibility of the signal.  If I tried triggering a sensor across the house with max hold on, there was almost no signal at all.  Once again demonstrating how much of a novice I truely am in rf, the solution was incredibly simple, but unfortunately a hour of two out of sight.  Eventually I tried changing the "Ch0 Gain Mode" in the osmocom source in GRC from Manual to Automatic, and like magic, signals further than a couple feet became visible.
 
 ### Decoding the signal
+
 #### Visualizing the signal
 I assumed there was some sort of bitstream being transmitted in each pulse I was seeing in the FFT, so next I tried using a time sink to visualize the bitstream.  This proved to be very difficult, in part because of the nature of the Honeywell sensor, but more because of my unfamiliarity with GRC.  For the sensor's part, it was difficult to trigger it at a precise moment.  Moving the magnet near and away from the reed switch did trigger it, but getting it to trigger at the exact moment I was pausing the sink proved almost impossible.  I literally was able only to capture it one time, and even then I missed the beginning of the signal.
 
@@ -66,6 +69,7 @@ From here, I naively though I was close to being able to decode the signal and m
 I ended up with a GRC flowchart like this:
 ![](rawbytes.png)
 Here's a description of each of the blocks:
+
 - **osmocom Source** - This is the source for data from the RTL-SDR device.  As described above, changing the Gain Mode to Automatic was crucial.
 - **Low Pass Filter** - I experimented a bit with the low pass filter settings and found the settings above to work pretty well, but I'm certain they aren't optimal.  But they work well enough, so I moved on.
 - **Complex to Mag** - The one thing that proved useful from the demodulation rabbit hole was the direction to use the Complex to Mag block to convert the incoming complex number data into a floating magnitude.  Apparently Complex to Mag^2 is more performant because you save a sqrt call, but I built the code around Complex to Mag and never went back to investigate using Mag^2. Here's a scope screenshot to demonstrate what the signal looks like after Complex to Mag (compare to the complex number signal screenshot further above).
@@ -83,4 +87,5 @@ One additional note: I first started with higher sample rate and lower decimatio
 And finally: I will note again that I was, and still am, an novice with gnuradio and GRC.  I'm certain there are both optimizations to make to the above flowchart, as well as many ways to succeed with the Clock Recovery and other blocks that stymied me.  But, this is what I ended up with and, if nothing else, it is functional.
 
 [Part 2 (Protocol)](part2.md) -\->
+
 VV [Code](https://github.com/denglend/decode345) VV
