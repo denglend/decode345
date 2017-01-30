@@ -29,7 +29,7 @@ The gnuradio python script can be run with no command line options required `pyt
 
 If using the python decoder, the options (MQTT broker address, device IDs, etc) are set directly within the decode345.py file.
 
-If using the C decoder, the opations are set on the command line, as follows:
+If using the C decoder, the options are set on the command line, as follows:
 ```
 Usage: ./decode345 [options]
  -d, --devicefile FILE	file for device IDs and names
@@ -41,7 +41,7 @@ Usage: ./decode345 [options]
  ```
 Other notes:
 - Verbose mode (off by default) is probably required if you do not know the IDs of your sensors (which you would have no way of knowing in advance).  In Verbose mode, a variety of informational messages will be displayed about each packet received.
-- The **devicefile** is a lits of all devices you would like decode345 to recognize and transmit via MQTT.  Any devices no included in this file will be displayed as "Unknown Device" and will not be transmitted to the MQTT broker.
+- The **devicefile** is a lits of all devices you would like decode345 to recognize and transmit via MQTT.  Any devices not included in this file will be displayed as "Unknown Device" and will not be transmitted to the MQTT broker.
 - The default **port** is 1883, the same as the MQQT default.
 - The default **host** is localhost.
 - The **fifoname** option allows you to select a different named pipe to use for the communication channel between the gnuradio script and the decoder.  By default /tmp/grcfifo is used.  If changed here, you will also have to change it in the gnuradio flowgraph.
