@@ -2,6 +2,7 @@
 This project decodes the 345 Mhz signals used by Honeywell 5800 series wireless components.  See the [decode345 project writeup](https://denglend.github.io/decode345/) for more background and technical operation of the project.
 
 decide345 consistens of two parts:
+
 1. A gnuradio flowgraph/python script to capture the RF signal and pipe it to Part 2:
 2. A decoder (python and C verison available) that decodes the Honeywell protocol and transmits it via MQTT to a destination (e.g. to a home automation system like OpenHAB).
 
