@@ -1,5 +1,5 @@
 # decode345
-This project decodes the 345 Mhz signals used by Honeywell 5800 series wireless components.  See the [decode345 project writeup](https://denglend.github.io/decode345/) for more background and technical operation of the project.
+This project decodes the 345 Mhz signals used by Honeywell 5800 series wireless security system components.  See the [decode345 project writeup](https://denglend.github.io/decode345/) for more background and technical operation of the project.
 
 decide345 consistens of two parts:
 
@@ -16,7 +16,7 @@ Required Software (to run binaries):
 - gnuradio
 - mosquitto or other MQTT broker (if you want to use this functionality)
 - OpenHAB (if you want to use this functionality)
-- python
+- python (and paho.mqtt and crcmod libraries, if using python decoder)
 
 Required Software (to build C code):
 - gcc
@@ -26,9 +26,11 @@ Required Software (to build C code):
 To compile the C code, try `gcc decode345.c  -o decode345 -lmosquitto`
 
 ###Usage
-The gnuradio python script can be run with no command line options required `python receive345.py`.
+You will have to run two separate components:
+1. The receiver, which is just a gnuradio/grc flowgraph in python.  The gnuradio python script can be run with no command line options required `python receive345.py`.
+2. The decoder, which comes in two varieties: python and C.
 
-If using the python decoder, the options (MQTT broker address, device IDs, etc) are set directly within the decode345.py file.
+If using the python decoder, the options (MQTT broker address, device IDs, etc) are set directly within the decode345.py file, which can be executed by `python decode345.py`
 
 If using the C decoder, the options are set on the command line, as follows:
 ```

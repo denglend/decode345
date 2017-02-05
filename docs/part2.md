@@ -66,7 +66,7 @@ This yielded strings like:
 ```
 Where _ are lows and - are highs (doubled to indicate a long low or high)
 
-This made a lot more sense.  Now the bit streams were nearly a sensible 128 symbols long (126 in the top example, 127 in the latter), and after a realization that an initial or terminal low would get lost in the background noise and preceeded or followed it (and therefore required manually prepending or appending), I got a consistent 128 symbol stream.
+This made a lot more sense.  Now the bit streams were nearly a sensible 128 symbols long (126 in the top example, 127 in the latter), and after a realization that an initial or terminal low would get lost in the background noise that preceeded or followed it (and therefore required manually prepending or appending), I got a consistent 128 symbol stream.
 
 Since there were never more than two highs or lows consecutively, I assumed the transition between low and high encoded the bits.  Apparently encoding data in the low/high transition is a very common scheme (see [Manchester Encoding](https://en.wikipedia.org/wiki/Manchester_code)).  But it was news to me.
 
@@ -87,7 +87,7 @@ Decoding the 8-byte packets was thankfully the simplest part of the project.  Th
  - **Sync2** - The second byte is very similar, but ends in a high-low (0xFE).  So perhaps the second byte actually encodes something, or perhaps the high-low is just an indicator that the payload is to follow. In either case, I ignore the contents of Sync and Sync2 in the code, instead opting to check for a stream of 64 bits as an indication of data.  If I were more enterprising, I would have used the sync bits to detect the clock frequency instead of hardcoding it.  But the decoding worked just fine without that extra step, so I didn't bother.
  - **Device ID** - The next three bytes encode the ID of the sensor.  The Device IDs don't seem to be completely random: all of mine have 08 as the first nibble, with the remaining 2.5 bytes looking pretty random.  Perhaps the device type is encoded as well?  Or perhaps it's just a sequential ID counter and all my devices were produced around the same time.  I don't have any other types of devices (motion sensors, etc.) or devices purchased at different time to check.
  - **Status** - Following the Device ID is a single status byte, which indicates the state of the sensor as well as the reason for the transmission.
- - **CRC** - Finally, the last two bytes are a CRC.  I assumed they were a CRC because they were consistent between all transmisisons that had six identical previous bytes, but their content seemed unpredictable otherwise.  
+ - **CRC** - Finally, the last two bytes are a CRC.  I assumed they were a CRC because they were consistent between all transmissions that were otherwise identical (i.e. in the six bytes prior to the CRC), but their content seemed unpredictable otherwise.
 
 #### Status states
 The status bits indicate the state of the different subsensors as well as whether the transmission was caused by a change in state or is just a periodic transmission.
