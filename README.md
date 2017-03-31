@@ -6,7 +6,7 @@ decide345 consistens of two parts:
 1. A gnuradio flowgraph/python script to capture the RF signal and pipe it to Part 2:
 2. A decoder (python and C verison available) that decodes the Honeywell protocol and transmits it via MQTT to a destination (e.g. to a home automation system like OpenHAB).
 
-###Requirements
+### Requirements
 Required Hardware:
 - SDR dongle (e.g. RTL or HackRF).
 - PC to process and decide the RF data (Raspberry Pi 3 is a good choice).  Only tested to work on Linux.
@@ -22,10 +22,10 @@ Required Software (to build C code):
 - gcc
 - libmosquitto
 
-###Compiling
+### Compiling
 To compile the C code, try `gcc decode345.c  -o decode345 -lmosquitto`
 
-###Usage
+### Usage
 You will have to run two separate components:
 1. The receiver, which is just a gnuradio/grc flowgraph in python.  The gnuradio python script can be run with no command line options required `python receive345.py`.
 2. The decoder, which comes in two varieties: python and C.
@@ -51,7 +51,7 @@ Other notes:
 - Both the C and python decoders will always transmit on the MQTT topic /security/[DEVICE NAME] and will send the message OPEN or CLOSED.
 - Since the RF receiver (gnuradio component) and protocol decoder (decode345.py or decoder345 binary) use named pipes to communicate, it is normal that their startup will block until both are running.
 
-###Verbose Output
+### Verbose Output
 If you run in verbose mode, you'll get output that looks like this:
 ```
 Packet Received: 0xfffe849ea7800aad
@@ -69,7 +69,7 @@ String length 7d: _-_-_-_--_-_-_-_-_-_-_-_-_-_--__--_-_-_-__--_-_-__-_--_-__--_-
 ```
 These indicate incomplete received packets; complete packets are 0x80 in length.  The _'s and -'s indicate lows and highs in the received signal, for debugging purposes.
 
-###devicefile Format
+### devicefile Format
 To translate between Device IDs and a human-readable name for each sensor, edit the devicelist dict in the decode345.py file (if using Python) or pass a devicefile (if using the C binary).
 The devicefile format is one line per device, with each line starting with the device ID in hexadecimal, followed by whitespace and then the device name.  For example:
 ```
