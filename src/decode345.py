@@ -7,12 +7,12 @@ import crcmod
 
 
 
-Settings = {
-	"Verbose": 		False
-	,"ShowPulseChecks":	False
-	,"Show192":		False
-	,"MQTTHostName":	"127.0.0.1"
-	,"FIFOName":		"/tmp/grcfifo"
+SETTINGS = {
+	"Verbose":   		False,
+    "ShowPulseChecks":	False,
+    "Show192":  		False,
+    "MQTTHostName": 	"127.0.0.1",
+    "FIFOName":		"/tmp/grcfifo"
 }
 
 
@@ -47,12 +47,12 @@ client = mqtt.Client()
 crcfunc = crcmod.predefined.mkCrcFun('crc-16-buypass')
 
 try:
-	os.mkfifo(Settings["FIFOName"])
+	os.mkfifo(SETTINGS["FIFOName"])
 except OSError as oe: 
 	if oe.errno != errno.EEXIST:
 		raise
 
-with open(Settings["FIFOName"], "rb") as f:
+with open(SETTINGS["FIFOName"], "rb") as f:
 	curstate=0		# 0 = waiting for bit .... 1 = mid-bit
 	curlen=0		# length of current stream of symbols
 	parsedmostrecent=0	# flag that end of transimission has been reached
@@ -69,7 +69,7 @@ with open(Settings["FIFOName"], "rb") as f:
 					curstr = "_"+curstr				#add back a single leading low (sync pattern always starts with a low)
 					if len(curstr) == 127 or len(curstr) == 191:
 						curstr = curstr + "_"			#add back an ending low if needed
-					if len(curstr) == 192 and Settings["Show192"]:
+					if len(curstr) == 192 and SETTINGS["Show192"]:
 						print("String length: 192")		# temp decoding 192 bit strings
 						bytes = [0,0,0,0,0,0,0,0,0,0,0,0]
 						for curbyte in range(0,12):
@@ -79,7 +79,7 @@ with open(Settings["FIFOName"], "rb") as f:
 									bytes[curbyte] +=1
 						print ('['+','.join(format(x, '02X') for x in bytes)+']')			
 					elif len(curstr) != 128:
-						if Settings["Verbose"]:
+						if SETTINGS["Verbose"]:
 							print("String length: "+str(len(curstr)))
 							print(curstr)
 					else:				
@@ -95,10 +95,10 @@ with open(Settings["FIFOName"], "rb") as f:
 						crc = crcfunc("".join(map(chr,bytes[2:6])))
 						if (crc & 0xFF) == bytes[7] and ((crc & 0xFF00)>>8) == bytes[6]:
 							if device in devicelist:
-								client.connect(Settings["MQTTHostName"], 1883, 60)	
+								client.connect(SETTINGS["MQTTHostName"], 1883, 60)	
 								client.publish("/security/"+devicelist[device],"OPEN" if 1<<7 & status >0 else "CLOSED")
 								client.disconnect()
-							if Settings["ShowPulseChecks"] or (1<<2 & status) ==0: 
+							if SETTINGS["ShowPulseChecks"] or (1<<2 & status) ==0: 
 								if device in devicelist:
 									print(devicelist[device],end=" ")
 								else:
@@ -109,13 +109,13 @@ with open(Settings["FIFOName"], "rb") as f:
 									else:
 										print(statuslist[statusbit][1],end="")
 								print ('['+','.join(format(x, '02X') for x in bytes)+']')
-						elif Settings["Verbose"]:
+						elif SETTINGS["Verbose"]:
 							# CRC Fail
 							print("CRC Fail: ",end="")
 							print ('['+','.join(format(x, '02X') for x in bytes)+']')
 					curstr=""
 					parsedmostrecent=1
-					if Settings["Verbose"]:
+					if SETTINGS["Verbose"]:
 						for hc in range(0,10000):
 							if Stats_High[hc]>0:print(str(hc)+": "+str(Stats_High[hc]),end=" ")
 						print("")
@@ -140,6 +140,6 @@ with open(Settings["FIFOName"], "rb") as f:
 				elif curlen>RunErrLen:		#interpret as an error
 					print("\n  short - "+str(curlen))
 					curstr=""
-				if curlen <= 10000 and Settings["Verbose"]: Stats_High[curlen]+=1
+				if curlen <= 10000 and SETTINGS["Verbose"]: Stats_High[curlen]+=1
 				curlen=0
 				curstate=0			#wait for next bit
