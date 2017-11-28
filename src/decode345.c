@@ -21,10 +21,34 @@
 #define RUN_0_LEN SAMPLE_RATE / 1000000 * 100 / DECIMATION	//100 orig value
 #define RUN_ERR_LEN RUN_0_LEN	
 
+	/*
+	/ To enable support within one file for multiple sensor types, set the "sensorModel" variable to the value that corresponds to the following models:
+	/	0 = Honeywell 5800 (@denglend, update this to your model)	
+	/ 	1 = Honeywell 5816
+	*/
+	int sensorModel=1;
+	const char** StatusList = NULL;
+	const char* StatusList5800[] = {"Closed ","Open ","","Tamper-Sensor ","","Bit5-0 ","","Bit4-0 ","","Battery-Low ","","Pulse-Check ","","Bit1-0 ","","Bit0-0 "};
+        /*
+        / bit 0: Unknown (usually 0)
+        / bit 1: Unknown (usually 0)
+        / bit 2: Pulse-Check (1=true)
+        / bit 3: Unknown (usually 0)
+        / bit 4: Unknown (usually 0)
+        / bit 5: Sensor Open/Closed (0=Door/Window Closed; 1=Door/Window Open)
+        / bit 6: Tamper Sensor (0=cover on; 1=cover off [tampered])
+        / bit 7: Unknown (always 1?)
+        */
+	const char* StatusList5816[] = {"","","Tamper-Sensor Closed "," Tamper-Sensor Open ","Entry Closed! ","Entry Open! ","","Bit4-0 ","","Battery-Low ","","Pulse-Check ","","Bit1-0 ","","Bit0-0 "};
+
+	//Just setting defaults - these will be overridden later
+	int OpenCloseBit=7;
+	int TestBitAdjustment=0;
+
 	uint32_t * DeviceIDs = NULL;
 	char** DeviceNames = NULL;
 	int NumDevices = 0;
-	char* StatusList[] = {"Closed ","Open ","","Tamper-Sensor ","","Bit5-0 ","","Bit4-0 ","","Battery-Low ","","Pulse-Check ","","Bit1-0 ","","Bit0-0 "};
+	
 	struct mosquitto* MQ = NULL;
 	char* MQTT_Host = "127.0.0.1";
 	int MQTT_Port = 1883;
@@ -122,7 +146,24 @@ int main (int argc, char **argv)
 		abort ();
         }
 }
-
+        switch (sensorModel) {
+		case 0:
+			StatusList = StatusList5800;
+			//Set this to the bit that's flipped to 1 if the door/window is open
+			OpenCloseBit = 7;
+			break;
+		case 1:
+			StatusList = StatusList5816;
+			//Set this to the bit that's flipped to 1 if the door/window is open
+			OpenCloseBit = 5;
+			//If the 7th bit is always/usually 1, set this to 1.
+			TestBitAdjustment = 1;
+                        break;
+		default:
+			printf("Please specify a valid sensor model");
+			abort();
+        }
+	
 	if (Verbose) {
 		printf("# of Devices: %d\n",NumDevices);
 		for(i=0;i<NumDevices;i++) printf(" Device %d (0x%x): %s\n",i,DeviceIDs[i],DeviceNames[i]);
@@ -191,23 +232,25 @@ void ParseByte(unsigned char Val) {
 					uint8_t CRCBuffer[] = {CurPacket>>40 & 0xFF,CurPacket>>32 & 0xFF,CurPacket>>24 & 0xFF,CurPacket>>16 & 0xFF};
 					int i,j;
 					//for (i=sizeof(DeviceIDs)/sizeof(DeviceIDs[0])-1;i>=0;i--) if (DeviceIDs[i] == DeviceID) break;
-					for (i=NumDevices;i>=0;i--) if (DeviceIDs[i] == DeviceID) break;
+					if(NumDevices > 0) {
+						for (i=NumDevices;i>=0;i--) if (DeviceIDs[i] == DeviceID) break;
+					}
 					if (gen_crc16(CRCBuffer, 4) != (uint16_t) CurPacket & 0xFFFF) {
 						if (Verbose) printf("CRC Fail: 0x%" PRIx64 "\n",CurPacket);
 					}
-					else if (i>=0) {
+					else if (i>=0 && NumDevices > 0) {
 						printf("Device: %s ",DeviceNames[i]);
-						for (j=0;j<8;j++) printf("%s",StatusList[(7-j)*2+((1<<j & Status )>0 ? 1 : 0)]);
+						for (j=0;j<8;j++) printf("%s",StatusList[(7-j)*2+((1<<j & Status )>0+TestBitAdjustment ? 1 : 0)]);
 						printf("\n");
 						char Topic[MAX_STRING_LENGTH] = "/security/";
 						strcat(Topic,DeviceNames[i]);
 						char Payload[7] = "CLOSED";
-						if (Status & 1<<7) strcpy(Payload,"OPEN");
+						if (Status & 1<<OpenCloseBit) strcpy(Payload,"OPEN");
 						if (Verbose) printf("Mosquitto Sending: %s %s to %s:%d\n",Topic,Payload,MQTT_Host,MQTT_Port);
 						mosquitto_publish_callback_set(MQ,MQ_Callback);
 						mosquitto_publish(MQ,NULL,Topic,strlen(Payload),Payload,2,false);
 					}
-					else if (i <0) {
+					else { 
 						printf("Unknown Device: 0x%x ",DeviceID);
 						for (i=0;i<8;i++) printf("%s",StatusList[(7-i)*2+((1<<i & Status )>0 ? 1 : 0)]);
 						printf("\n");
