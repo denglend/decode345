@@ -23,12 +23,12 @@
 
 	/*
 	/ To enable support within one file for multiple sensor types, set the "sensorModel" variable to the value that corresponds to the following models:
-	/	0 = Honeywell 5800 (@denglend, update this to your model)	
+	/	0 = Honeywell 5811 
 	/ 	1 = Honeywell 5816
 	*/
-	int sensorModel=1;
+	int sensorModel=0;
 	const char** StatusList = NULL;
-	const char* StatusList5800[] = {"Closed ","Open ","","Tamper-Sensor ","","Bit5-0 ","","Bit4-0 ","","Battery-Low ","","Pulse-Check ","","Bit1-0 ","","Bit0-0 "};
+	const char* StatusList5811[] = {"Closed ","Open ","","Tamper-Sensor ","","Bit5-0 ","","Bit4-0 ","","Battery-Low ","","Pulse-Check ","","Bit1-0 ","","Bit0-0 "};
         /*
         / bit 0: Unknown (usually 0)
         / bit 1: Unknown (usually 0)
@@ -148,7 +148,7 @@ int main (int argc, char **argv)
 }
         switch (sensorModel) {
 		case 0:
-			StatusList = StatusList5800;
+			StatusList = StatusList5811;
 			//Set this to the bit that's flipped to 1 if the door/window is open
 			OpenCloseBit = 7;
 			break;
