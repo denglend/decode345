@@ -1,5 +1,5 @@
 # This is used to provide a consistent MAC address to the guest VM. I use this to enable my router to provide a static IP.
-guest_mac_addr:  "3333d02ffcf2" 
+guest_mac_addr:  "4E96393AEF0B" 
 
 # Set to true if you want to be able to access services @ localhost (i.e. http://localhost to access Kibana). Otherwise, 
 # set to false to access services at the hosname set below (i.e. http://exampleHostname:5601 to access Kibana). Note that unless 

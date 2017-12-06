@@ -2,23 +2,17 @@
 
 apt-get update
 #Install dependencies
-apt-get install -y swig doxygen gnuradio librtlsdr0 gr-osmosdr libmosquitto-dev
+apt-get install -y swig doxygen gnuradio librtlsdr0 gr-osmosdr libmosquitto-dev mosquitto-clients
 
 #if using python version of decode345
 apt-get install -y python-pip 
 pip install paho-mqtt
 pip install crcmod
 
-#not sure if we need these or not...
-#mosquitto mosquitto-clients python-mosquitto 
-
 git clone https://github.com/denglend/decode345.git
 cd decode345/src
 echo "Compiling decode345.c"
 gcc decode345.c -o decode345 -lmosquitto
-
-#If VNC i
-#apt-get install -y xfce4 xfce4-goodies tightvncserver
 
 echo "To get started, run 'vagrant ssh' to SSH into the running VM."
 echo "Then run 'sudo python2.7 ~/decode345/bin/receive345.py'."
