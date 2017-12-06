@@ -85,6 +85,6 @@ SCRIPT
 
  end
 
-  #config.vm.provision "shell", path: "provisionVM.sh"
+  config.vm.provision "shell", path: "provisionVM.sh"
 
 end
