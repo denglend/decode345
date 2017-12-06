@@ -79,7 +79,7 @@ SCRIPT
 	# Note that this will automatically bind to the host's network interface on ports 8080, 5555, and 8443, so those ports must be available. This is required for automatic device discovery (uPNP)
 	# Update the "USER_ID" value to match the user ID who runs this script. If YOU run this script, run `id` on the host to see your id. 
 	# Update the "device" value with the location of your SDR device inside the VM. The easiest way to see the location is to run (from within the VM) `ls /dev/tty*` copy the output, then unplug the device and run the command again. There should be one tty that disappears - that is where your device is mounted.
-	d.run "openhab", image: "openhab/openhab:2.1.0-amd64-debian", args: "--net host -v /etc/localtime:/etc/localtime:ro -v /etc/timezone:/etc/timezone:ro -d -v /vagrant/openhab/openhab_addons:/openhab/addons -v /vagrant/openhab/openhab_conf:/openhab/conf -v /vagrant/openhab/openhab_userdata:/openhab/userdata --restart=always -e USER_ID=1000 --device=/dev/ttyS0"
+	d.run "openhab", image: "openhab/openhab:2.1.0-amd64-debian", args: "--net=host -v /etc/localtime:/etc/localtime:ro -v /etc/timezone:/etc/timezone:ro -d -v /vagrant/openhab/openhab_addons:/openhab/addons -v /vagrant/openhab/openhab_conf:/openhab/conf -v /vagrant/openhab/openhab_userdata:/openhab/userdata --restart=always -e USER_ID=1000 --device=/dev/ttyS0"
 	d.run "mosquitto", image: "eclipse-mosquitto", args: "-itd -p 1884:1883 -p 9001:9001 -v /vagrant/mosquitto/config:/mosquitto/config -v /vagrant/mosquitto/data:/mosquitto/data -v /vagrant/mosquitto/log:/vagrant/mosquitto/log" #ports 1883 and 9001
 
 
