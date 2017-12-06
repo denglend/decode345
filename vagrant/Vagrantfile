@@ -1,0 +1,90 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+
+require 'yaml'
+settings = YAML.load_file './vagrant_vars.yaml'
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/xenial64"
+
+        if (defined?(settings['guest_hostname']).nil?)
+                # do nothing if hostname var is not defined
+        else
+                config.vm.hostname = settings['guest_hostname']
+        end
+
+        config.vm.box_check_update = true
+
+        # Create a public network, which generally matched to bridged network.
+        # Bridged networks make the machine appear as another physical device on
+        # your network.
+        if (defined?(settings['guest_mac_addr']).nil?)
+                config.vm.network "public_network"
+        elsif (defined?(settings['host_interface']).nil?)
+                print "No network interface set in vagrant_vars.yml\n"
+                config.vm.network "public_network", mac: settings['guest_mac_addr']
+        else
+                print "Using network interface: " + settings['host_interface'] + ".\n"
+                config.vm.network "public_network", mac: settings['guest_mac_addr'], bridge: settings['host_interface']
+        end
+
+
+        $gatewayUpdate_script = <<SCRIPT
+                #update gateway to allow it to respond outside of localhost
+                #if there is a current default gateway set to $VAGRANT_GATEWAY
+                echo "Setting default route."
+                if [ -n  "`ip route | grep 'default via '$VAGRANT_GATEWAY`" ]; then
+                        route del default gw $VAGRANT_GATEWAY
+                        route add default gw $NETWORK_GATEWAY
+                        echo "Default route set."
+                else
+                        echo "Default route already set correctly."
+                fi
+SCRIPT
+ if (settings['setupDuo'] == "true")
+                config.vm.provision "shell", path: "setupDuo.sh", env: {"DUO_IKEY" => settings['duo_integration_key'], "DUO_SKEY" => settings['duo_secret_key'], "DUO_APIHOST" => settings['duo_api_hostname']}
+        end
+
+        if (settings['networkAccess'] == "true")
+                #update gateway to allow it to respond outside of localhost -- comment this line out if you only want access to the services via IP/hostname from localhost
+                config.vm.provision "shell", run: "always", inline: $gatewayUpdate_script, env: {"VAGRANT_GATEWAY" => settings['vagrant_gateway'], "NETWORK_GATEWAY" => settings['network_gateway']}
+        end
+
+        if (settings['localhostAccess'] == "true")
+                #If you want to access these services via localhost (i.e. http://localhost:5601 for Kibana), set localhostAccess to true. Otherwise use the above to access services via the guest hostname or IP
+                config.vm.network "forwarded_port", guest: 8443, host: 8443 #web interface
+        end
+
+   config.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048"
+      vb.cpus = 2
+
+	  ### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! READ THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ###
+# Update the following variables below with information regarding your USB SDR device, and uncomment the 2 following lines:
+# <DEVICE_NAME>: Arbitrary name for your device - this is a label that you will see when it is mounted to the VM.  Can be anthing you want.
+# <VENDOR_ID>: To find the vendorid and productid, run `VBoxManage list usbhost` from the host machine
+# <PRODUCT_ID>: To find the vendorid and productid, run `VBoxManage list usbhost` from the host machine
+# If you do not see the USB device, install the VirtualBox Extension Pack (https://code-chronicle.blogspot.com/2014/08/connect-usb-device-through-vagrant.html)
+      # vb.customize ["modifyvm", :id, "--usb", "on"]
+      # vb.customize ['usbfilter', 'add', '0', '--target', :id, '--name', '<DEVICE_NAME>', '--vendorid', '<VENDOR_ID>', '--productid', '<PRODUCT_ID>']
+   end
+##########################################################################
+
+ config.vm.provision "docker" do |d|
+	# Note that this will automatically bind to the host's network interface on ports 8080, 5555, and 8443, so those ports must be available. This is required for automatic device discovery (uPNP)
+	# Update the "USER_ID" value to match the user ID who runs this script. If YOU run this script, run `id` on the host to see your id. 
+	# Update the "device" value with the location of your SDR device inside the VM. The easiest way to see the location is to run (from within the VM) `ls /dev/tty*` copy the output, then unplug the device and run the command again. There should be one tty that disappears - that is where your device is mounted.
+	d.run "openhab", image: "openhab/openhab:2.1.0-amd64-debian", args: "--net host -v /etc/localtime:/etc/localtime:ro -v /etc/timezone:/etc/timezone:ro -d -v /vagrant/openhab/openhab_addons:/openhab/addons -v /vagrant/openhab/openhab_conf:/openhab/conf -v /vagrant/openhab/openhab_userdata:/openhab/userdata --restart=always -e USER_ID=1000 --device=/dev/ttyS0"
+	d.run "mosquitto", image: "eclipse-mosquitto", args: "-itd -p 1884:1883 -p 9001:9001 -v /vagrant/mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf -v /vagrant/mosquitto/data:/mosquitto/data -v /vagrant/mosquitto/log:/vagrant/mosquitto/log" #ports 1883 and 9001
+
+
+ end
+
+  #config.vm.provision "shell", path: "provisionVM.sh"
+
+end
