@@ -242,13 +242,13 @@ void ParseByte(unsigned char Val) {
 						printf("Device: %s ",DeviceNames[i]);
 						for (j=0;j<8;j++) printf("%s",StatusList[(7-j)*2+((1<<j & Status )>0+TestBitAdjustment ? 1 : 0)]);
 						printf("\n");
-						char Topic[MAX_STRING_LENGTH] = "/security/";
-						strcat(Topic,DeviceNames[i]);
+						//char Topic[MAX_STRING_LENGTH] = "/security/";
+						//strcat(Topic,DeviceNames[i]);
 						char Payload[7] = "CLOSED";
 						if (Status & 1<<OpenCloseBit) strcpy(Payload,"OPEN");
-						if (Verbose) printf("Mosquitto Sending: %s %s to %s:%d\n",Topic,Payload,MQTT_Host,MQTT_Port);
+						if (Verbose) printf("Mosquitto Sending: %s %s to %s:%d\n",DeviceNames[i],Payload,MQTT_Host,MQTT_Port);
 						mosquitto_publish_callback_set(MQ,MQ_Callback);
-						mosquitto_publish(MQ,NULL,Topic,strlen(Payload),Payload,2,false);
+						mosquitto_publish(MQ,NULL,DeviceNames[i],strlen(Payload),Payload,2,false);
 					}
 					else { 
 						printf("Unknown Device: 0x%x ",DeviceID);
